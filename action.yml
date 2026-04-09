@@ -8,7 +8,7 @@ inputs:
     description: 'Encryption password (use a repository secret)'
     required: true
   base-path:
-    description: 'Base URL path for the site (e.g. /repo-name/). Defaults to /<repo>/ for GitHub Pages project sites.'
+    description: 'Base URL path for the site (e.g. /repo-name/ for project sites, / for custom domains). Auto-detected for GitHub Pages.'
     required: false
 runs:
   using: 'composite'
@@ -24,10 +24,19 @@ runs:
     - name: Build encrypted VFS
       shell: bash
       run: |
-        # Default base path to /<repo-name>/ for GitHub Pages project sites
+        # Auto-detect base path for GitHub Pages:
+        # - User/org sites (<owner>.github.io) → /
+        # - Project sites → /<repo-name>/
+        # - Explicit input always wins
         BASE_PATH="${{ inputs.base-path }}"
         if [ -z "$BASE_PATH" ]; then
-          BASE_PATH="/${{ github.event.repository.name }}/"
+          REPO_NAME="${{ github.event.repository.name }}"
+          OWNER="${{ github.repository_owner }}"
+          if [ "$REPO_NAME" = "${OWNER}.github.io" ]; then
+            BASE_PATH="/"
+          else
+            BASE_PATH="/${REPO_NAME}/"
+          fi
         fi
         node "${{ github.action_path }}/build/pack.mjs" \
           --src "${{ github.workspace }}/${{ inputs.source-dir }}" \

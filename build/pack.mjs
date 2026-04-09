@@ -25,17 +25,18 @@ const projectRoot = path.resolve(__dirname, '..');
 // ─── CLI argument parsing ──────────────────────────────────────────────────────
 
 function parseArgs(argv) {
-  const args = { src: 'src', out: 'dist', key: null, base: '/' };
+  const args = { src: 'src', out: 'dist', key: null, base: null };
   for (let i = 2; i < argv.length; i++) {
     if (argv[i] === '--src' && argv[i + 1]) args.src = argv[++i];
     else if (argv[i] === '--out' && argv[i + 1]) args.out = argv[++i];
     else if (argv[i] === '--key' && argv[i + 1]) args.key = argv[++i];
     else if (argv[i] === '--base' && argv[i + 1]) args.base = argv[++i];
   }
-  // Fall back to env vars if flags not provided
+  // Fall back to env vars only when flags not explicitly provided
   if (!args.key) args.key = process.env.VFS_KEY || null;
-  if (args.base === '/') args.base = process.env.VFS_BASE || '/';
-  // Ensure base has trailing slash
+  if (args.base === null) args.base = process.env.VFS_BASE || '/';
+  // Normalize: must be absolute and have trailing slash
+  if (!args.base.startsWith('/')) args.base = '/' + args.base;
   if (!args.base.endsWith('/')) args.base += '/';
   if (!args.key) {
     console.error('Error: --key <encryption_key> or VFS_KEY env var is required');
