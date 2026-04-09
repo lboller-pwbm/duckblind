@@ -1,0 +1,53 @@
+name: Deploy Sample Site to Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'build/**'
+      - 'client/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+
+      - name: Install DuckDB CLI
+        run: |
+          curl -fsSL "https://github.com/duckdb/duckdb/releases/download/v1.4.4/duckdb_cli-linux-amd64.zip" -o /tmp/duckdb.zip
+          echo "ea79eae4233f1aba9a020c8a61877de38a789bc62cdd37485d3589cd77dc0d3e  /tmp/duckdb.zip" | sha256sum -c
+          unzip -o /tmp/duckdb.zip -d /usr/local/bin
+          chmod +x /usr/local/bin/duckdb
+
+      - name: Build encrypted VFS
+        run: node build/pack.mjs --src src --out dist --key "${{ secrets.VFS_ENCRYPTION_KEY }}"
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v5

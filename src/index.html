@@ -4,19 +4,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Private Site — Home</title>
-  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <nav>
-    <a href="/">Home</a>
-    <a href="/about">About</a>
-    <a href="/gallery">Gallery</a>
+    <a href="./">Home</a>
+    <a href="about">About</a>
+    <a href="gallery">Gallery</a>
   </nav>
   <main>
     <h1>Welcome to the Private Site</h1>
     <p>This entire website is served from an encrypted DuckDB database.</p>
     <p>No plaintext assets exist on the server — everything is decrypted in your browser.</p>
-    <img src="/images/hero.png" alt="Hero image">
+    <img src="images/hero.png" alt="Hero image">
     <section>
       <h2>How it works</h2>
       <ol>
@@ -26,6 +26,23 @@
       </ol>
     </section>
   </main>
-  <script src="/app.js"></script>
+  <script src="app.js"></script>
+  <script type="module">
+    import { greet } from './modules/greet.js';
+    const el = document.createElement('p');
+    el.id = 'module-test';
+    el.textContent = greet('VFS');
+    document.querySelector('main')?.appendChild(el);
+  </script>
+  <script>
+    fetch('data.json')
+      .then(r => r.json())
+      .then(data => {
+        const el = document.createElement('p');
+        el.id = 'fetch-test';
+        el.textContent = data.message;
+        document.querySelector('main')?.appendChild(el);
+      });
+  </script>
 </body>
 </html>

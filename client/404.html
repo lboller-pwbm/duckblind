@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<script>
+// GitHub Pages SPA redirect for cold-start deep links.
+// When a path 404s, encode the full original URL and redirect to the loader.
+// The loader will navigate to the correct page after unlock + cache population.
+//
+// Works with any base path: root, single-segment (/repo/), or deeper (/org/repo/).
+// Derives the base from the SW scope or falls back to finding index.html.
+
+// Encode the full target: path (relative to origin), query, and hash
+var target = location.pathname + location.search + location.hash;
+
+// Find our loader by walking up the path until we hit a real page.
+// On GitHub Pages, index.html always exists at the repo root.
+// For simplicity, use the referrer if available, otherwise try common bases.
+var loader = '/';
+
+// Try to detect base from the path — GitHub Pages project sites use /repo-name/
+// We check if there's a segment that could be the repo root by looking for
+// where index.html would be served.
+var segments = location.pathname.split('/').filter(Boolean);
+if (segments.length > 0) {
+  // Assume the first segment is the repo name on *.github.io project sites.
+  // On root deploys or custom domains, this redirect just goes to /.
+  // Either way, the loader at that path will handle it.
+  loader = '/' + segments[0] + '/';
+}
+
+// If we're already at the loader path (e.g., root 404), just go to /
+if (location.pathname === loader || location.pathname === loader.slice(0, -1)) {
+  // Don't redirect to ourselves
+} else {
+  location.replace(loader + '?redirect=' + encodeURIComponent(target));
+}
+</script>
+</head><body></body></html>

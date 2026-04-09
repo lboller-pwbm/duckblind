@@ -1,0 +1,54 @@
+# Example workflow — copy this to your other repos at .github/workflows/deploy-vfs.yml
+#
+# Prerequisites:
+#   1. Go to repo Settings > Pages > Source: "GitHub Actions"
+#   2. Add a repository secret: Settings > Secrets > VFS_ENCRYPTION_KEY
+#
+# Usage:
+#   Push to main and it auto-deploys, or trigger manually from Actions tab.
+
+name: Deploy Encrypted VFS to Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/_book/**'           # <-- change to match your source-dir
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+
+      # Pin to a release tag (e.g., @v1) for production use
+      - name: Build encrypted VFS
+        uses: lboller-pwbm/duckblind@main
+        with:
+          source-dir: docs/_book    # <-- change this to your rendered site folder
+          encryption-key: ${{ secrets.VFS_ENCRYPTION_KEY }}
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v5

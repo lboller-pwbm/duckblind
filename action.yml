@@ -1,0 +1,32 @@
+name: 'Encrypted VFS Deploy'
+description: 'Pack a folder into an encrypted DuckDB database and deploy to GitHub Pages'
+inputs:
+  source-dir:
+    description: 'Directory to pack into the encrypted VFS'
+    required: true
+  encryption-key:
+    description: 'Encryption password (use a repository secret)'
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - name: Install DuckDB CLI (v1.4.4, checksum-verified)
+      shell: bash
+      run: |
+        curl -fsSL "https://github.com/duckdb/duckdb/releases/download/v1.4.4/duckdb_cli-linux-amd64.zip" -o /tmp/duckdb.zip
+        echo "ea79eae4233f1aba9a020c8a61877de38a789bc62cdd37485d3589cd77dc0d3e  /tmp/duckdb.zip" | sha256sum -c
+        unzip -o /tmp/duckdb.zip -d /usr/local/bin
+        chmod +x /usr/local/bin/duckdb
+
+    - name: Build encrypted VFS
+      shell: bash
+      run: |
+        node "${{ github.action_path }}/build/pack.mjs" \
+          --src "${{ github.workspace }}/${{ inputs.source-dir }}" \
+          --out "${{ github.workspace }}/_vfs-dist" \
+          --key "${{ inputs.encryption-key }}"
+
+    - name: Upload Pages artifact
+      uses: actions/upload-pages-artifact@v4
+      with:
+        path: ${{ github.workspace }}/_vfs-dist

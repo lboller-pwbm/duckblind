@@ -1,0 +1,13 @@
+{
+  "name": "duckblind",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "node build/pack.mjs",
+    "serve": "npx serve dist"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "description": "A static website packed into an AES-encrypted DuckDB database, served via DuckDB-Wasm in the browser."
+}
