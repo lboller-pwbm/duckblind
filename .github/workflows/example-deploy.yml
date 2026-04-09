@@ -41,6 +41,8 @@ jobs:
         with:
           source-dir: docs/_book    # <-- change this to your rendered site folder
           encryption-key: ${{ secrets.VFS_ENCRYPTION_KEY }}
+          # For project sites (username.github.io/repo/), uncomment:
+          # base-path: /${{ github.event.repository.name }}/
 
   deploy:
     needs: build

@@ -36,7 +36,7 @@ jobs:
           chmod +x /usr/local/bin/duckdb
 
       - name: Build encrypted VFS
-        run: node build/pack.mjs --src src --out dist --key "${{ secrets.VFS_ENCRYPTION_KEY }}"
+        run: node build/pack.mjs --src src --out dist --key "${{ secrets.VFS_ENCRYPTION_KEY }}" --base "/${{ github.event.repository.name }}/"
 
       - uses: actions/upload-pages-artifact@v4
         with:
