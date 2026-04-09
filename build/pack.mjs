@@ -222,17 +222,22 @@ INSERT INTO site.vfs (path, mime, content, size) VALUES ('${escapedPath}', '${es
   }
 
   // ── Step 5: Copy client loader and service worker to dist ──
-  // Compute a build-specific cache name from the encrypted DB hash.
-  // The browser checks for SW byte changes on each navigation — a new hash
-  // triggers install → activate → old cache deleted → user re-enters key.
+  // Compute a build-specific cache name from all shipped assets.
+  // Covers DB content changes AND loader/SW code changes so any deploy
+  // invalidates the cache. The browser checks for SW byte changes on each
+  // navigation — a new hash triggers install → activate → old cache deleted.
   const encDbPath = path.join(outDir, 'site.duckdb');
-  const dbHash = crypto.createHash('sha256')
-    .update(fs.readFileSync(encDbPath))
-    .digest('hex').slice(0, 12);
-  const cacheName = `vfs-cache-${dbHash}`;
+  const buildHash = crypto.createHash('sha256');
+  buildHash.update(fs.readFileSync(encDbPath));
+  const loaderSrc = path.join(projectRoot, 'client', 'index.html');
+  if (fs.existsSync(loaderSrc)) buildHash.update(fs.readFileSync(loaderSrc));
+  const swSrc = path.join(projectRoot, 'client', 'sw.js');
+  if (fs.existsSync(swSrc)) buildHash.update(fs.readFileSync(swSrc));
+  const notFoundSrc = path.join(projectRoot, 'client', '404.html');
+  if (fs.existsSync(notFoundSrc)) buildHash.update(fs.readFileSync(notFoundSrc));
+  const cacheName = `vfs-cache-${buildHash.digest('hex').slice(0, 12)}`;
 
   // Copy loader to dist, injecting the build-specific cache name
-  const loaderSrc = path.join(projectRoot, 'client', 'index.html');
   const loaderDst = path.join(outDir, 'index.html');
   if (fs.existsSync(loaderSrc)) {
     let loaderContent = fs.readFileSync(loaderSrc, 'utf8');
@@ -244,7 +249,6 @@ INSERT INTO site.vfs (path, mime, content, size) VALUES ('${escapedPath}', '${es
   }
 
   // Copy service worker to dist, injecting the same cache name
-  const swSrc = path.join(projectRoot, 'client', 'sw.js');
   const swDst = path.join(outDir, 'sw.js');
   if (fs.existsSync(swSrc)) {
     let swContent = fs.readFileSync(swSrc, 'utf8');
@@ -256,7 +260,6 @@ INSERT INTO site.vfs (path, mime, content, size) VALUES ('${escapedPath}', '${es
   }
 
   // Copy 404.html for GitHub Pages SPA deep-link support
-  const notFoundSrc = path.join(projectRoot, 'client', '404.html');
   const notFoundDst = path.join(outDir, '404.html');
   if (fs.existsSync(notFoundSrc)) {
     fs.copyFileSync(notFoundSrc, notFoundDst);
