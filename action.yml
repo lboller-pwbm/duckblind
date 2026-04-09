@@ -7,6 +7,9 @@ inputs:
   encryption-key:
     description: 'Encryption password (use a repository secret)'
     required: true
+  base-path:
+    description: 'Base URL path for the site (e.g. /repo-name/). Defaults to /<repo>/ for GitHub Pages project sites.'
+    required: false
 runs:
   using: 'composite'
   steps:
@@ -21,10 +24,16 @@ runs:
     - name: Build encrypted VFS
       shell: bash
       run: |
+        # Default base path to /<repo-name>/ for GitHub Pages project sites
+        BASE_PATH="${{ inputs.base-path }}"
+        if [ -z "$BASE_PATH" ]; then
+          BASE_PATH="/${{ github.event.repository.name }}/"
+        fi
         node "${{ github.action_path }}/build/pack.mjs" \
           --src "${{ github.workspace }}/${{ inputs.source-dir }}" \
           --out "${{ github.workspace }}/_vfs-dist" \
-          --key "${{ inputs.encryption-key }}"
+          --key "${{ inputs.encryption-key }}" \
+          --base "$BASE_PATH"
 
     - name: Upload Pages artifact
       uses: actions/upload-pages-artifact@v4
