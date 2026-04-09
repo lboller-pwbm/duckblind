@@ -46,7 +46,7 @@ Cache-first: tries exact match first, then falls back to `{ ignoreSearch: true }
 
 ## Key Constraints
 
-- `PLAN.md` is a locked specification document — do not modify it
+- `ROADMAP.md` contains the Phase 3b lazy on-demand serving plan and remaining test items
 - DuckDB CLI v1.4.4+ required for native encryption (OpenSSL). DuckDB-Wasm v1.32.0 reads via MbedTLS.
 - Service workers require HTTPS (or localhost). S3 alone won't work — needs CloudFront or GitHub Pages.
 - CDN scripts are SRI-verified: worker scripts and WASM binaries are fetched, hashed, and loaded from verified blob URLs. The ESM module is hash-checked then imported from the CDN URL (best-effort — browser may re-fetch, but the version pin limits exposure). If you bump the DuckDB-Wasm version, regenerate all hashes:
