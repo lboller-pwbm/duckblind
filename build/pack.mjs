@@ -14,6 +14,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
+import crypto from 'node:crypto';
 import { execSync, execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
@@ -221,21 +222,35 @@ INSERT INTO site.vfs (path, mime, content, size) VALUES ('${escapedPath}', '${es
   }
 
   // ── Step 5: Copy client loader and service worker to dist ──
+  // Compute a build-specific cache name from the encrypted DB hash.
+  // The browser checks for SW byte changes on each navigation — a new hash
+  // triggers install → activate → old cache deleted → user re-enters key.
+  const encDbPath = path.join(outDir, 'site.duckdb');
+  const dbHash = crypto.createHash('sha256')
+    .update(fs.readFileSync(encDbPath))
+    .digest('hex').slice(0, 12);
+  const cacheName = `vfs-cache-${dbHash}`;
+
+  // Copy loader to dist, injecting the build-specific cache name
   const loaderSrc = path.join(projectRoot, 'client', 'index.html');
   const loaderDst = path.join(outDir, 'index.html');
   if (fs.existsSync(loaderSrc)) {
-    fs.copyFileSync(loaderSrc, loaderDst);
-    console.log(`  Copied loader: ${loaderDst}`);
+    let loaderContent = fs.readFileSync(loaderSrc, 'utf8');
+    loaderContent = loaderContent.replace('vfs-cache-v1', cacheName);
+    fs.writeFileSync(loaderDst, loaderContent);
+    console.log(`  Wrote loader: ${loaderDst}`);
   } else {
     console.warn('  Warning: client/index.html not found — skipping loader copy');
   }
 
-  // Copy service worker to dist
+  // Copy service worker to dist, injecting the same cache name
   const swSrc = path.join(projectRoot, 'client', 'sw.js');
   const swDst = path.join(outDir, 'sw.js');
   if (fs.existsSync(swSrc)) {
-    fs.copyFileSync(swSrc, swDst);
-    console.log(`  Copied service worker: ${swDst}`);
+    let swContent = fs.readFileSync(swSrc, 'utf8');
+    swContent = swContent.replace('vfs-cache-v1', cacheName);
+    fs.writeFileSync(swDst, swContent);
+    console.log(`  Wrote service worker: ${swDst} (cache: ${cacheName})`);
   } else {
     console.warn('  Warning: client/sw.js not found — skipping service worker copy');
   }
