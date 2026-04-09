@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Private Site — Home</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <nav>
+    <a href="/">Home</a>
+    <a href="/about">About</a>
+    <a href="/gallery">Gallery</a>
+  </nav>
+  <main>
+    <h1>Welcome to the Private Site</h1>
+    <p>This entire website is served from an encrypted DuckDB database.</p>
+    <p>No plaintext assets exist on the server — everything is decrypted in your browser.</p>
+    <img src="/images/hero.png" alt="Hero image">
+    <section>
+      <h2>How it works</h2>
+      <ol>
+        <li>All site files are packed into an encrypted DuckDB database at build time</li>
+        <li>The browser fetches only the encrypted blocks it needs via HTTP range requests</li>
+        <li>DuckDB-Wasm decrypts and serves content entirely client-side</li>
+      </ol>
+    </section>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>

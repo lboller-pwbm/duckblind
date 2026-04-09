@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 300" width="600" height="300">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#16213e"/>
+    </marker>
+  </defs>
+
+  <!-- Build Phase -->
+  <rect x="20" y="40" width="120" height="60" rx="8" fill="#e8f4f8" stroke="#0f3460" stroke-width="2"/>
+  <text x="80" y="75" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#0f3460">src/ files</text>
+
+  <line x1="140" y1="70" x2="190" y2="70" stroke="#16213e" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <rect x="200" y="40" width="120" height="60" rx="8" fill="#e8f4f8" stroke="#0f3460" stroke-width="2"/>
+  <text x="260" y="68" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#0f3460">pack.mjs</text>
+  <text x="260" y="85" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#666">+ encryption</text>
+
+  <line x1="320" y1="70" x2="370" y2="70" stroke="#16213e" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <rect x="380" y="40" width="140" height="60" rx="8" fill="#ffeaa7" stroke="#0f3460" stroke-width="2"/>
+  <text x="450" y="68" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#0f3460">site.duckdb</text>
+  <text x="450" y="85" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#666">encrypted</text>
+
+  <!-- Runtime Phase -->
+  <rect x="20" y="180" width="120" height="60" rx="8" fill="#dfe6e9" stroke="#16213e" stroke-width="2"/>
+  <text x="80" y="215" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#16213e">Browser</text>
+
+  <line x1="140" y1="210" x2="190" y2="210" stroke="#16213e" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <rect x="200" y="180" width="120" height="60" rx="8" fill="#dfe6e9" stroke="#16213e" stroke-width="2"/>
+  <text x="260" y="205" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#16213e">DuckDB-Wasm</text>
+  <text x="260" y="225" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#666">+ decrypt key</text>
+
+  <line x1="320" y1="210" x2="370" y2="210" stroke="#16213e" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <rect x="380" y="180" width="140" height="60" rx="8" fill="#ffeaa7" stroke="#16213e" stroke-width="2"/>
+  <text x="450" y="205" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#16213e">Range Request</text>
+  <text x="450" y="225" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#666">→ site.duckdb</text>
+
+  <!-- Labels -->
+  <text x="260" y="25" text-anchor="middle" font-family="sans-serif" font-size="16" font-weight="bold" fill="#0f3460">Build Phase</text>
+  <text x="260" y="165" text-anchor="middle" font-family="sans-serif" font-size="16" font-weight="bold" fill="#16213e">Runtime Phase</text>
+</svg>

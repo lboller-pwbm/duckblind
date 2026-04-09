@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Private Site — About</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <nav>
+    <a href="/">Home</a>
+    <a href="/about">About</a>
+    <a href="/gallery">Gallery</a>
+  </nav>
+  <main>
+    <h1>About This Project</h1>
+    <p>This is a proof-of-concept for hosting a fully private, media-rich website on a public static host like GitHub Pages.</p>
+    <h2>Technology Stack</h2>
+    <ul>
+      <li><strong>DuckDB-Wasm</strong> — In-browser analytical database</li>
+      <li><strong>AES Encryption</strong> — Block-level encryption of the database file</li>
+      <li><strong>HTTP Range Requests</strong> — Fetch only needed data blocks</li>
+      <li><strong>Web Crypto API</strong> — Secure key handling in the browser</li>
+    </ul>
+    <img src="/images/diagram.svg" alt="Architecture diagram">
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>
