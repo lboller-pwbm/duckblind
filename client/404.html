@@ -1,59 +1,34 @@
 <!DOCTYPE html>
 <html><head><meta charset="UTF-8">
+<!-- vfs-base meta tag is injected by the build script at build time -->
 <script>
 // GitHub Pages SPA redirect for cold-start deep links.
 // When a path 404s, redirect to the loader with the original URL encoded.
 // The loader will navigate to the correct page after unlock + cache population.
-//
-// On GitHub Pages, 404.html is always served from the same directory as index.html
-// (the repo root for project sites, or site root for custom domains).
-// We find the base by looking for the script's own location — the 404.html path
-// tells us where the app root is.
 
 // The full target URL the user originally requested
 var target = location.pathname + location.search + location.hash;
 
-// Derive the app base from this 404 page's own URL.
-// GitHub Pages serves 404.html from the app root, so the loader is a sibling.
-// For project sites: /repo/404.html → base is /repo/
-// For root/custom domains: /404.html → base is /
-// We can't read our own filename from the URL (the browser shows the requested URL),
-// so we probe for index.html by walking up from the requested path.
-
-// Strategy: try each parent directory until we find one that could be the app root.
-// The simplest heuristic that covers all GitHub Pages deployment shapes:
-// On project sites (username.github.io/repo/), the base path has exactly one segment.
-// On org sites or custom domains, the base is /.
-// On deeper mounts, we can't know — but those are rare.
-//
-// Better approach: use a build-injected base path if available, otherwise
-// try the referrer or fall back to /.
+// Read the app base path from the build-injected meta tag.
+// This works for all deployment shapes: root, subpath, custom domain.
 var base = '/';
-
-// Check if the page was deployed with a known base path (injected by build script)
-// Falls back to heuristic detection
 var metaBase = document.querySelector('meta[name="vfs-base"]');
 if (metaBase && metaBase.content) {
   base = metaBase.content;
 } else {
-  // Heuristic: on GitHub Pages project sites, the first segment is the repo name.
-  // On custom domains or root deploys, the entire site is at /.
-  // We detect this by checking if we're on a *.github.io domain.
-  var isGitHubPages = location.hostname.endsWith('.github.io');
-  if (isGitHubPages) {
+  // Fallback heuristic when meta tag is missing (e.g. manual deploy without build script).
+  // On *.github.io project sites, the first segment is the repo name.
+  if (location.hostname.endsWith('.github.io')) {
     var segments = location.pathname.split('/').filter(Boolean);
     if (segments.length > 1) {
-      // Project site: /repo/some/path → base is /repo/
       base = '/' + segments[0] + '/';
     }
-    // else: root site (username.github.io/) → base stays /
   }
-  // For custom domains and non-GitHub hosts, base stays /
 }
 
-// Don't redirect if we're already at the base
+// Don't redirect if we're already at the base (nothing to redirect to)
 if (location.pathname === base || location.pathname + '/' === base) {
-  // We're at the app root and it 404'd — nothing to redirect to
+  // At the app root and it 404'd — nothing we can do
 } else {
   location.replace(base + '?redirect=' + encodeURIComponent(target));
 }

@@ -25,14 +25,18 @@ const projectRoot = path.resolve(__dirname, '..');
 // ─── CLI argument parsing ──────────────────────────────────────────────────────
 
 function parseArgs(argv) {
-  const args = { src: 'src', out: 'dist', key: null };
+  const args = { src: 'src', out: 'dist', key: null, base: '/' };
   for (let i = 2; i < argv.length; i++) {
     if (argv[i] === '--src' && argv[i + 1]) args.src = argv[++i];
     else if (argv[i] === '--out' && argv[i + 1]) args.out = argv[++i];
     else if (argv[i] === '--key' && argv[i + 1]) args.key = argv[++i];
+    else if (argv[i] === '--base' && argv[i + 1]) args.base = argv[++i];
   }
-  // Fall back to VFS_KEY env var if --key not provided
+  // Fall back to env vars if flags not provided
   if (!args.key) args.key = process.env.VFS_KEY || null;
+  if (args.base === '/') args.base = process.env.VFS_BASE || '/';
+  // Ensure base has trailing slash
+  if (!args.base.endsWith('/')) args.base += '/';
   if (!args.key) {
     console.error('Error: --key <encryption_key> or VFS_KEY env var is required');
     process.exit(1);
@@ -259,11 +263,16 @@ INSERT INTO site.vfs (path, mime, content, size) VALUES ('${escapedPath}', '${es
     console.warn('  Warning: client/sw.js not found — skipping service worker copy');
   }
 
-  // Copy 404.html for GitHub Pages SPA deep-link support
+  // Copy 404.html for GitHub Pages SPA deep-link support, injecting the base path
   const notFoundDst = path.join(outDir, '404.html');
   if (fs.existsSync(notFoundSrc)) {
-    fs.copyFileSync(notFoundSrc, notFoundDst);
-    console.log(`  Copied 404 redirect: ${notFoundDst}`);
+    let notFoundContent = fs.readFileSync(notFoundSrc, 'utf8');
+    notFoundContent = notFoundContent.replace(
+      '</head>',
+      `<meta name="vfs-base" content="${args.base}">\n</head>`
+    );
+    fs.writeFileSync(notFoundDst, notFoundContent);
+    console.log(`  Wrote 404 redirect: ${notFoundDst} (base: ${args.base})`);
   } else {
     console.warn('  Warning: client/404.html not found — skipping 404 redirect copy');
   }
