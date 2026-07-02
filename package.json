@@ -9,5 +9,9 @@
   "keywords": [],
   "author": "",
   "license": "MIT",
-  "description": "A static website packed into an AES-encrypted DuckDB database, served via DuckDB-Wasm in the browser."
+  "description": "A static website packed into an AES-encrypted DuckDB database, served via DuckDB-Wasm in the browser.",
+  "devDependencies": {
+    "@duckdb/duckdb-wasm": "1.32.0",
+    "esbuild": "^0.25.0"
+  }
 }

@@ -22,6 +22,12 @@ runs:
         unzip -o /tmp/duckdb.zip -d /usr/local/bin
         chmod +x /usr/local/bin/duckdb
 
+    - name: Install build dependencies (esbuild + DuckDB-Wasm for same-origin bundling)
+      shell: bash
+      run: |
+        cd "${{ github.action_path }}"
+        npm ci
+
     - name: Build encrypted VFS
       shell: bash
       run: |
