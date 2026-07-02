@@ -107,6 +107,34 @@ function duckdbExec(dbPath, sql) {
   });
 }
 
+// Recompute the DuckDB-Wasm `/+esm` SRI hash at build time and inject it into the
+// loader. jsDelivr's /+esm is a generated transform whose minified bytes drift
+// across their build-toolchain updates — even for a pinned version — which would
+// otherwise break the loader's pinned SRI check and require a manual re-hash. By
+// hashing whatever the CDN currently serves at deploy time, every redeploy
+// self-heals. If the fetch fails, we keep the static hash baked into the loader.
+async function injectEsmSriHash(loaderContent) {
+  const urlMatch = loaderContent.match(/const esmUrl = '([^']+)'/);
+  if (!urlMatch) return loaderContent;
+  const esmUrl = urlMatch[1];
+  try {
+    const resp = await fetch(esmUrl);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const buf = Buffer.from(await resp.arrayBuffer());
+    const hash = crypto.createHash('sha384').update(buf).digest('base64');
+    const placeholder = /(esm:\s*')sha384-[^']*(')/;
+    if (!placeholder.test(loaderContent)) {
+      console.warn('  Warning: esm SRI hash placeholder not found — loader unchanged');
+      return loaderContent;
+    }
+    console.log(`  Injected esm SRI hash from CDN: sha384-${hash.slice(0, 16)}…`);
+    return loaderContent.replace(placeholder, `$1sha384-${hash}$2`);
+  } catch (err) {
+    console.warn(`  Warning: could not recompute esm SRI hash (${err.message}); using static hash`);
+    return loaderContent;
+  }
+}
+
 // ─── Main build pipeline ──────────────────────────────────────────────────────
 
 async function main() {
@@ -247,6 +275,7 @@ INSERT INTO site.vfs (path, mime, content, size) VALUES ('${escapedPath}', '${es
   if (fs.existsSync(loaderSrc)) {
     let loaderContent = fs.readFileSync(loaderSrc, 'utf8');
     loaderContent = loaderContent.replace('vfs-cache-v1', cacheName);
+    loaderContent = await injectEsmSriHash(loaderContent);
     fs.writeFileSync(loaderDst, loaderContent);
     console.log(`  Wrote loader: ${loaderDst}`);
   } else {
