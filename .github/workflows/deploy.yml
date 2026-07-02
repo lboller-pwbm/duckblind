@@ -35,6 +35,9 @@ jobs:
           unzip -o /tmp/duckdb.zip -d /usr/local/bin
           chmod +x /usr/local/bin/duckdb
 
+      - name: Install build dependencies (esbuild for same-origin DuckDB-Wasm bundling)
+        run: npm ci
+
       - name: Build encrypted VFS
         run: node build/pack.mjs --src src --out dist --key "${{ secrets.VFS_ENCRYPTION_KEY }}" --base "/${{ github.event.repository.name }}/"
 
