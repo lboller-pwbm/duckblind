@@ -52,7 +52,8 @@ Cache-first: tries exact match first, then falls back to `{ ignoreSearch: true }
 - CDN scripts are SRI-verified: worker scripts and WASM binaries are fetched, hashed, and loaded from verified blob URLs. The ESM module is hash-checked then imported from the CDN URL (best-effort — browser may re-fetch, but the version pin limits exposure). If you bump the DuckDB-Wasm version, regenerate all hashes:
   ```bash
   # ESM, MVP worker, EH worker, MVP WASM, EH WASM
-  for p in "+esm" "dist/duckdb-browser-mvp.worker.js" "dist/duckdb-browser-eh.worker.js" "dist/duckdb-mvp.wasm" "dist/duckdb-eh.wasm"; do
+  # NB: use the raw dist ESM entry (byte-stable), NOT jsDelivr's /+esm transform (bytes drift → SRI breaks)
+  for p in "dist/duckdb-browser.mjs" "dist/duckdb-browser-mvp.worker.js" "dist/duckdb-browser-eh.worker.js" "dist/duckdb-mvp.wasm" "dist/duckdb-eh.wasm"; do
     curl -sL "https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@VERSION/$p" | openssl dgst -sha384 -binary | openssl base64 -A; echo " $p"
   done
   ```
